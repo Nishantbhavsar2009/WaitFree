@@ -3,149 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WaitFree — ADHD Waiting Mode Task Breaker</title>
-    <meta name="description" content="Defeat ADHD waiting mode and start resistance by breaking down daunting tasks into satisfying, sub-2-minute interactive steps.">
     
-    <!-- Google Fonts -->
+    <!-- SEO Meta Tags -->
+    <title>WaitFree — ADHD Waiting Mode Task Breaker</title>
+    <meta name="description" content="Overcome ADHD waiting mode paralysis. Break tasks down into low-friction, sub-2-minute interactive steps before your next appointment.">
+    <link rel="canonical" href="http://localhost:8000/">
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@200;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
     
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Styling -->
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <!-- Background Noise Mesh Overlay -->
-    <div class="noise-overlay" aria-hidden="true"></div>
+    <!-- Background Scanlines for Cyberpunk Theme -->
+    <div class="scanlines"></div>
+    <div class="glow-bg"></div>
 
-    <div class="app-container">
+    <div class="container">
         <!-- HEADER -->
         <header class="app-header">
             <div class="logo-area">
-                <span class="logo-prefix">WAIT</span>
-                <span class="logo-suffix">FREE</span>
-            </div>
-            
-            <!-- Stats Tracker -->
-            <div class="header-stats" id="header-stats">
-                <div class="stat-pill" title="Current daily streak">
-                    <span class="stat-label">STREAK:</span>
-                    <span class="stat-value text-teal" id="stat-streak">0d</span>
+                <span class="logo-icon">▲</span>
+                <div class="logo-text">
+                    <h1>WAITFREE</h1>
+                    <span class="version">SYS_VER 2.0.6</span>
                 </div>
-                <div class="stat-pill" title="Total micro-tasks completed">
-                    <span class="stat-label">VICTORIES:</span>
-                    <span class="stat-value text-violet" id="stat-victories">0</span>
+            </div>
+            <div class="stats-hud">
+                <div class="hud-item">
+                    <span class="hud-label">DAILY_STREAK</span>
+                    <span class="hud-value" id="streak-count">0D</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-label">COMPLETED_STEPS</span>
+                    <span class="hud-value" id="subtask-completed-count">0</span>
                 </div>
             </div>
         </header>
 
         <!-- MAIN LAYOUT -->
-        <main class="app-main">
-            <!-- SECTION 1: TASK CREATOR (DASHBOARD ENTRY) -->
-            <section id="panel-entry" class="panel panel-entry">
-                <div class="panel-header">
-                    <h1>Defeat the Inertia</h1>
-                    <p class="panel-subtitle">Are you stuck in waiting mode? Let's break your task down into sub-2-minute physical steps.</p>
-                </div>
-
-                <form id="form-task-creator" class="task-form">
-                    <div class="input-group">
-                        <label for="input-task-name" class="input-label">What is the daunting task you need to start?</label>
-                        <input type="text" id="input-task-name" class="input-field text-input" 
-                               placeholder="e.g., Wash the dishes, Draft that email, Pack the suitcase..." required autocomplete="off">
-                    </div>
-
-                    <div class="input-group-row">
-                        <div class="input-group flex-1">
-                            <label for="input-duration" class="input-label">Available time before next event? (optional)</label>
-                            <div class="slider-container">
-                                <input type="range" id="input-duration" class="slider-field" min="5" max="60" step="5" value="20">
-                                <span class="slider-value" id="slider-value-display">20 mins</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="btn-decompose" class="btn btn-primary btn-glow">
-                        <span class="btn-text">Decompose Task</span>
-                        <div class="btn-glow-ring"></div>
-                    </button>
-                </form>
-            </section>
-
-            <!-- SECTION 2: ACTIVE FOCUS PANEL (TIMER & PROGRESS VIEW) -->
-            <section id="panel-focus" class="panel panel-focus hidden">
-                <div class="focus-header">
-                    <button id="btn-abort-session" class="btn-text-only" title="Return to Dashboard">&larr; Abort Session</button>
-                    <span class="session-category" id="session-task-title">CLEAN THE ROOM</span>
-                </div>
-
-                <div class="focus-grid">
-                    <!-- Left: Focus timer ring -->
-                    <div class="focus-visual-container">
-                        <div class="focus-ring-wrapper">
-                            <!-- SVG Timer Ring -->
-                            <svg class="progress-ring" width="320" height="320">
-                                <circle class="progress-ring-circle-bg" stroke="#1c1d27" stroke-width="6" fill="transparent" r="145" cx="160" cy="160"></circle>
-                                <circle class="progress-ring-circle" id="timer-ring-path" stroke="#00f5d4" stroke-width="8" fill="transparent" r="145" cx="160" cy="160"></circle>
-                            </svg>
-                            <!-- Inner Content -->
-                            <div class="focus-timer-text">
-                                <div class="timer-countdown" id="timer-display">02:00</div>
-                                <div class="timer-action-label" id="timer-label">SECONDS LEFT</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right: Step focus card -->
-                    <div class="focus-content-container">
-                        <div class="step-progress-indicator">
-                            STEP <span id="current-step-index">1</span> OF <span id="total-step-count">5</span>
-                        </div>
-                        
-                        <div class="step-card" id="step-card">
-                            <h2 class="step-title" id="step-title">Pick up three shirts off the floor</h2>
-                            <p class="step-explanation" id="step-explanation">Just pick them up. Do not fold them yet, simply gather them and put them in the laundry bin.</p>
-                        </div>
-
-                        <div class="focus-controls">
-                            <button id="btn-timer-toggle" class="btn btn-secondary flex-1">
-                                <span id="timer-toggle-text">Start Timer</span>
-                            </button>
-                            <button id="btn-step-complete" class="btn btn-primary flex-1 btn-glow">
-                                <span>Complete Step</span>
-                            </button>
-                        </div>
-                        
-                        <div class="focus-status-bar">
-                            <div class="micro-stats">
-                                <span>Total Estimated: <span id="session-total-est">6m</span></span>
-                                <span>•</span>
-                                <span class="text-teal">Session Active</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- SECTION 3: RECENT VICTORIES (HISTORY) -->
-            <section id="panel-history" class="panel panel-history">
-                <div class="panel-header-sub">
-                    <h2>Recent Victories</h2>
-                    <span class="header-count" id="history-count">0 Sessions</span>
+        <main class="hud-grid">
+            
+            <!-- LEFT PANEL: Control HUD & Form -->
+            <section class="control-panel glass-card">
+                <div class="card-header">
+                    <h2>[01] INITIATE_BREAKOUT</h2>
+                    <span class="status-indicator flashing">STANDBY</span>
                 </div>
                 
-                <div class="history-list" id="history-list">
-                    <p class="empty-state">No victories logged yet today. Let's break some starting resistance!</p>
+                <div class="card-body">
+                    <form id="task-form" class="freeze-form">
+                        <div class="form-group">
+                            <label for="task-title">WHAT TASK ARE YOU FROZEN ON?</label>
+                            <input 
+                                type="text" 
+                                id="task-title" 
+                                placeholder="e.g., Write CBSE Chemistry practical report..." 
+                                required
+                                autocomplete="off"
+                            >
+                            <span class="input-hint">Specify the task causing waiting mode freeze.</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>WHEN IS YOUR NEXT EVENT / APPOINTMENT?</label>
+                            <div class="pill-group" role="radiogroup" aria-label="Minutes left selection">
+                                <button type="button" class="pill-btn" data-value="15" role="radio" aria-checked="false">IN 15 MINS</button>
+                                <button type="button" class="pill-btn active" data-value="30" role="radio" aria-checked="true">IN 30 MINS</button>
+                                <button type="button" class="pill-btn" data-value="60" role="radio" aria-checked="false">IN 1 HOUR</button>
+                                <button type="button" class="pill-btn" data-value="120" role="radio" aria-checked="false">IN 2 HOURS</button>
+                                <button type="button" class="pill-btn custom-trigger" role="radio" aria-checked="false">CUSTOM</button>
+                            </div>
+                            <input type="number" id="minutes-left" value="30" class="hidden-input" min="1" max="1440">
+                            <div class="custom-input-container hidden">
+                                <input type="number" id="custom-minutes" placeholder="Minutes remaining..." min="1" max="1440">
+                                <span class="custom-unit">MINS</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" id="submit-btn">
+                            BREAK THE FREEZE
+                        </button>
+                    </form>
+                </div>
+
+                <!-- ANALOG TIMER & TIMER LOG -->
+                <div class="timer-container hidden" id="timer-hud">
+                    <div class="timer-circle">
+                        <svg viewBox="0 0 100 100">
+                            <circle class="timer-bg" cx="50" cy="50" r="45"></circle>
+                            <circle class="timer-progress" id="timer-progress" cx="50" cy="50" r="45"></circle>
+                        </svg>
+                        <div class="timer-digits" id="timer-digits">02:00</div>
+                    </div>
+                    <div class="timer-controls">
+                        <button class="timer-btn" id="timer-play-pause">PAUSE</button>
+                        <button class="timer-btn" id="timer-skip">SKIP_STEP</button>
+                    </div>
                 </div>
             </section>
+
+            <!-- RIGHT PANEL: Subtask Steps Terminal -->
+            <section class="terminal-panel glass-card">
+                <div class="card-header">
+                    <h2>[02] TASK_DECOMPOSITION_HUD</h2>
+                    <span class="status-indicator" id="task-status">EMPTY</span>
+                </div>
+                
+                <div class="card-body terminal-body" id="steps-container">
+                    <div class="terminal-placeholder">
+                        <p class="blink-line">&gt; SYSTEM RUNNING ON STANDBY...</p>
+                        <p>&gt; AWAITING INITIATION FORM SUBMISSION.</p>
+                        <p>&gt; READY TO BREAK DOWN TASKS INTO MICRO STEPS (< 2 MINS EACH).</p>
+                    </div>
+                </div>
+                
+                <div class="terminal-footer">
+                    <span class="prompt-symbol">&gt;</span>
+                    <div class="terminal-log" id="system-log">SYS_ONLINE: Waiting for input...</div>
+                </div>
+            </section>
+
         </main>
         
+        <!-- HISTORY FOOTER -->
         <footer class="app-footer">
-            <p>WaitFree &copy; 2026. Made to hack cognitive inertia.</p>
+            <div class="footer-left">
+                <span class="console-tag">USER: Nishantbhavsar2009</span>
+                <span class="separator">|</span>
+                <span class="console-tag" id="current-time">15:02:25</span>
+            </div>
+            <div class="footer-right">
+                <span class="engine-tag">POWERED BY GEMINI PROMPT OPTIMIZER</span>
+            </div>
         </footer>
     </div>
 
-    <!-- Web Audio & Core Logic Script -->
-    <script src="js/app.js"></script>
+    <!-- AUDIO NOTIFICATION FOR TIMER -->
+    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
+
+    <script src="/static/app.js"></script>
 </body>
 </html>

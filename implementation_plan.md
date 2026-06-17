@@ -1,89 +1,91 @@
-# Implementation Plan - WaitFree (ADHD Waiting Mode Task Breaker)
+# WaitFree (ADHD Waiting Mode Task Breaker) — Implementation Plan
 
-WaitFree is a web application designed to help people with ADHD overcome "waiting mode" (the feeling of being frozen or unable to start a task before an appointment or event). It solves this by breaking large, ambiguous tasks down into highly visual, step-by-step interactive blocks that take less than 2 minutes each.
+WaitFree is an immersive, high-craft web application designed to help people with ADHD overcome "waiting mode" paralysis. It takes a task the user is frozen on and dynamically breaks it down into sub-2-minute interactive steps, matching their available time before an upcoming appointment or event.
 
----
+## 1. Design Direction Summary (AAS Frontend Design Skill)
 
-## 1. Design Direction (Luxury Cyber-Minimalism)
-*   **Aesthetic Name**: Luxury Cyber-Minimalism (Dark theme with glowing neon-teal and violet accents, thin clean borders, and premium typography).
-*   **DFII Score**: **19 / 15** (Impact: 5, Fit: 5, Feasibility: 5, Performance: 5, Consistency Risk: 1).
-*   **Design Rationale**: ADHD brains are highly sensitive to cognitive clutter and visual noise. The interface needs to feel calming yet engaging. High-contrast dark backgrounds minimize eye strain, while sharp typography and clear neon-glowing interactive elements guide attention to exactly one action at a time.
-*   **Differentiation Anchor**: A central, circular "Inertia Breaker" focus ring that acts as both a visual progress indicator and a 2-minute focus timer. Completing a micro-task plays a tactile SVG morph animation and a subtle spatial audio chime (generated via the Web Audio API).
-
----
-
-## 2. Design System Snapshot
-*   **Color Palette**:
-    ```css
-    --bg-dark: #0a0a0c;      /* Deep obsidian void */
-    --card-dark: #121216;    /* Dark card background */
-    --text-primary: #f3f4f6; /* Off-white main text */
-    --text-muted: #8b8ea0;   /* Muted grey metadata */
-    --accent-teal: #00f5d4;  /* Glowing teal for progress & focus */
-    --accent-violet: #7b2cbf;/* Muted violet for secondary actions */
-    --border-subtle: #24252e;/* Thin dark border */
-    ```
-*   **Typography**:
-    *   Display: `Orbitron` or `Outfit` (Expressive modern geometric display for counters and headers)
-    *   Body: `Cabinet Grotesk` or standard high-craft sans-serif
-*   **Spacing Rhythm**: Base-8 rhythm (`8px`, `16px`, `24px`, `32px`, `64px`). Very generous padding and margin to give elements "breathing room" (controlled negative space).
+*   **Aesthetic Direction:** *Cyberpunk Utilitarianism / Retro-Futurist Terminal*
+*   **DFII Score:** **17 / 15**
+    *   *Aesthetic Impact:* 4.5/5 (Immersive dark layout, glassmorphic card overlays, glow states, glowing amber indicators)
+    *   *Context Fit:* 4.5/5 (High-contrast, terminal-like design signals "mission-critical focus mode," reducing ambient distraction)
+    *   *Implementation Feasibility:* 4.5/5 (Clean single-page app architecture using CSS grid/flexbox and vanilla JS)
+    *   *Performance Safety:* 4.5/5 (Pure CSS animations, zero heavyweight frameworks)
+    *   *Consistency Risk:* 1/5 (A single interactive viewport dashboard)
+*   **Typography:**
+    *   Display: *Outfit* (Google Fonts) — modern, geometric, crisp sans-serif.
+    *   Body/Terminal: *JetBrains Mono* (Google Fonts) — technical, high readability, monospace for numbers, steps, and statuses.
+*   **Color Palette (CSS Variables):**
+    *   `--bg-main`: `oklch(14.5% 0.015 285)` (Ultra-dark slate base)
+    *   `--bg-card`: `oklch(20% 0.02 285 / 0.7)` (Translucent glass panel)
+    *   `--accent-amber`: `oklch(76% 0.18 55)` (Vibrant warning amber for timers, focus buttons, and active states)
+    *   `--accent-dim`: `oklch(45% 0.1 55)` (Muted amber for inactive outlines)
+    *   `--text-bright`: `oklch(97% 0.01 285)` (High contrast off-white)
+    *   `--text-dim`: `oklch(65% 0.01 285)` (Slate-grey subtext)
+*   **Motion Philosophy:**
+    *   Sparse but high-impact. A pulse/glow effect on the active step, and a typewriter sequence when steps are broken down.
+*   **Differentiation Anchor:**
+    *   "Mission Control" HUD: A central retro-style analog timer ring and interactive grid cards that step the user through the task like a space flight pre-check list, completely avoiding generic SaaS dashboard patterns.
 
 ---
 
-## 3. Project Architecture
+## 2. Form CRO Optimization (AAS Form CRO Skill)
 
-### Directory Structure
+*   **Form Health & Friction Index:** **95 / 100**
+    *   *Bottlenecks Avoided:* No sign-up wall, no email input required to start, no multi-page wizard.
+    *   *Input Fields:*
+        1.  `What task are you frozen on?` (Single text line with immediate validation)
+        2.  `When is your next event/appointment?` (Clean radio selector pills: `In 15m`, `In 30m`, `In 1h`, `In 2h`, `Custom`)
+    *   *CTA Button Copy:* `[BREAK THE FREEZE]` (Amber glowing button, changes to `[BREAKING...]` and disables during task breakdown generation)
+
+---
+
+## 3. Core Tech Stack
+
+*   **Backend:** Python with FastAPI. Fast, type-safe REST endpoint.
+*   **Database:** SQLite (SQLAlchemy or raw SQLite) for storing tasks, generated steps, and daily stats (to showcase streaks and completions).
+*   **AI Integration:** Optional integration with Gemini API (using the standard SDK) to generate smart sub-tasks, with a local regex/fallback task breaker if API key is not configured.
+*   **Frontend:** Vanilla HTML5, Vanilla CSS3 (CSS Variables, Grid, OKLCH colors), Vanilla JS.
+
+---
+
+## 4. File Layout
+
+```text
+WaitFree/
+│
+├── main.py                 # FastAPI backend & database routing
+├── database.py             # SQLite setup, models, and CRUD helper
+├── requirements.txt        # python dependencies
+├── test_main.py            # Automated tests using pytest
+│
+├── static/                 # Frontend asset folder
+│   ├── index.html          # Main HTML structure (semantic layout)
+│   ├── style.css           # Custom CSS variables, glassmorphic HUD layout
+│   └── app.js              # State engine, timer logic, API client
+│
+├── README.md               # Setup and project description
+└── walkthrough.md          # Implementation walkthrough & testing log
 ```
-/Users/nishantbhavsar/Projects/WaitFree/
-├── requirements.txt
-├── main.py                     # FastAPI server
-├── api/
-│   ├── __init__.py
-│   ├── gemini_client.py        # Task subdivision engine using Gemini API
-│   ├── db_manager.py           # SQLite manager for tasks, steps, and history
-│   └── models.py               # Pydantic schemas
-├── static/                     # Frontend served statically
-│   ├── index.html              # Core application layout
-│   ├── css/
-│   │   └── style.css           /* Luxury Cyber-Minimalism Design System */
-│   └── js/
-│       └── app.js              /* Interactive state, timers, Web Audio, API fetch */
-├── tests/
-│   └── test_main.py            # Integration tests
-├── README.md                   # Project documentation
-├── walkthrough.md              # Feature demo walkthrough
-└── implementation_plan.md      # This plan
-```
 
 ---
 
-## 4. Key Features
+## 5. Build Checklist
 
-1.  **AI-Powered Task Subdivision**: User enters a daunting goal (e.g. "Clean my room", "Write a cover letter"). The backend queries Gemini with a specialized system prompt to output a JSON list of sub-2-minute steps.
-2.  **Focus Ring & Timer**: Displays exactly *one* micro-task at a time. A circular SVG ring fills up as the 2-minute timer counts down.
-3.  **Gamified Interactive Progress**: Sound chimes, particle bursts on step completion, and a satisfying progress tracker showing how close the user is to escaping "waiting mode."
-4.  **Local History**: Save completed sessions to SQLite database, displaying daily streaks and completed goals.
-
----
-
-## 5. Development Steps
-
-### Phase 1: Foundation (Backend & Database)
-- Initialize Git repository and Python virtual environment.
-- Create `db_manager.py` with tables: `sessions` (id, task, created_at, completed) and `steps` (id, session_id, title, duration, position, completed).
-- Implement `gemini_client.py` using Gemini API to decompose a prompt into structured JSON.
-- Build the FastAPI server in `main.py` serving static files and exposing `/api/sessions` (POST/GET) and `/api/steps` (PUT).
-
-### Phase 2: Design & Frontend Development
-- Create `static/css/style.css` defining the CSS custom properties, responsive typography, and animations.
-- Create `static/index.html` with clean semantic HTML5, including sections for Dashboard, Active Focus Mode, and Session History.
-- Create `static/js/app.js` containing the state machine, Web Audio synthesizer (for spatial chimes), timer controls, and API integration.
-
-### Phase 3: Integration & Testing
-- Write integration tests in `tests/test_main.py` validating task generation, database read/writes, and status updates.
-- Test the application end-to-end to ensure the transition from dashboard to active timer is seamless.
-- Optimize INP (Interaction to Next Paint) and eliminate visual layout shifts (CLS).
-
-### Phase 4: Documentation & Logging
-- Write `README.md` and `walkthrough.md`.
-- Commit changes and push to GitHub.
+- [ ] **Phase 1: Project Initialization**
+  - Create directory and configuration files.
+  - Setup virtual environment and dependencies.
+- [ ] **Phase 2: Database and API Backend**
+  - Implement SQLite models for `Task` and `SubTask`.
+  - Create API routes: `POST /api/tasks` (to parse and break task), `GET /api/tasks/{id}`, `PATCH /api/subtasks/{id}` (toggle done).
+  - Implement task breaker logic: a deterministic fallback and a generative prompt utilizing Gemini.
+- [ ] **Phase 3: Immersive Frontend Development**
+  - Create `index.html` with semantic sections (`<header>`, `<main>`, `<footer>`).
+  - Implement CSS styles matching *Cyberpunk Utilitarianism* styling tokens.
+  - Implement `app.js` clientside state controller (timer loops, event listeners, active subtask view).
+- [ ] **Phase 4: Testing & Verification**
+  - Write tests for backend routes.
+  - Run app locally to verify visual rendering and complete workflow.
+- [ ] **Phase 5: Git & GitHub Publish**
+  - Initialize git repo, commit, and push to GitHub.
+- [ ] **Phase 6: Iterative Improvements**
+  - Expand analytics dashboard, streak trackers, audio focus pings, or task editability.
