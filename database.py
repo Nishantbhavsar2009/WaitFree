@@ -154,12 +154,61 @@ def update_subtask_status(subtask_id: int, completed: bool):
         return True
 
 def get_daily_stats(conn=None):
-    """Returns today's statistics along with current streak details."""
+    """Returns today's statistics along with current streak details and cumulative progression."""
     today_str = date.today().isoformat()
     if conn:
-        return _get_daily_stats_with_conn(conn, today_str, commit=False)
+        stats = _get_daily_stats_with_conn(conn, today_str, commit=False)
+        _add_cumulative_stats(conn, stats)
+        return stats
     with get_db_connection() as c:
-        return _get_daily_stats_with_conn(c, today_str, commit=True)
+        stats = _get_daily_stats_with_conn(c, today_str, commit=True)
+        _add_cumulative_stats(c, stats)
+        return stats
+
+def _add_cumulative_stats(conn, stats):
+    cursor = conn.cursor()
+    cursor.execute("SELECT SUM(completed_tasks) as total_tasks, SUM(completed_subtasks) as total_subtasks FROM daily_stats")
+    row = cursor.fetchone()
+    total_tasks = row["total_tasks"] or 0
+    total_subtasks = row["total_subtasks"] or 0
+    
+    # Calculate XP (10 XP per subtask, 50 XP per full task)
+    total_xp = (total_subtasks * 10) + (total_tasks * 50)
+    
+    # Gamification Levels
+    if total_xp < 100:
+        level = 1
+        rank = "COGNITIVE_CADET"
+        next_level_xp = 100
+        prev_level_xp = 0
+    elif total_xp < 300:
+        level = 2
+        rank = "INERTIA_BREAKER"
+        next_level_xp = 300
+        prev_level_xp = 100
+    elif total_xp < 600:
+        level = 3
+        rank = "MOMENTUM_CAPTAIN"
+        next_level_xp = 600
+        prev_level_xp = 300
+    elif total_xp < 1000:
+        level = 4
+        rank = "FOCUS_SENTINEL"
+        next_level_xp = 1000
+        prev_level_xp = 600
+    else:
+        level = 5
+        rank = "ANTIGRAVITY_COMMANDER"
+        next_level_xp = 1000
+        prev_level_xp = 1000
+        
+    stats["total_completed_tasks"] = total_tasks
+    stats["total_completed_subtasks"] = total_subtasks
+    stats["total_xp"] = total_xp
+    stats["level"] = level
+    stats["rank"] = rank
+    stats["next_level_xp"] = next_level_xp
+    stats["prev_level_xp"] = prev_level_xp
 
 def _get_daily_stats_with_conn(conn, today_str, commit=True):
     cursor = conn.cursor()
@@ -210,4 +259,81 @@ def decrement_daily_stats(conn, completed_task=False, completed_subtask=False):
         cursor.execute("UPDATE daily_stats SET completed_tasks = MAX(0, completed_tasks - 1) WHERE date = ?", (today_str,))
     if completed_subtask:
         cursor.execute("UPDATE daily_stats SET completed_subtasks = MAX(0, completed_subtasks - 1) WHERE date = ?", (today_str,))
+
+def update_subtask_content(subtask_id: int, title: str, duration_seconds: int):
+    """Updates the title and duration of a subtask."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE subtasks SET title = ?, duration_seconds = ? WHERE id = ?",
+            (title, duration_seconds, subtask_id)
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+
+def delete_subtask(subtask_id: int):
+    """Deletes a subtask and adjusts task completion status if needed."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        # Fetch task_id of subtask first
+        cursor.execute("SELECT task_id, completed FROM subtasks WHERE id = ?", (subtask_id,))
+        row = cursor.fetchone()
+        if not row:
+            return False
+        task_id, was_completed = row["task_id"], row["completed"]
+        
+        # Delete the subtask
+        cursor.execute("DELETE FROM subtasks WHERE id = ?", (subtask_id,))
+        
+        # Decrement daily stats if the deleted subtask was completed
+        if was_completed:
+            decrement_daily_stats(conn, completed_subtask=True)
+            
+        # Re-check and update main task completion
+        cursor.execute("SELECT COUNT(*) as total FROM subtasks WHERE task_id = ?", (task_id,))
+        total_subtasks = cursor.fetchone()["total"]
+        
+        cursor.execute("SELECT COUNT(*) as completed FROM subtasks WHERE task_id = ? AND completed = 1", (task_id,))
+        completed_subtasks = cursor.fetchone()["completed"]
+        
+        is_task_completed = 1 if total_subtasks > 0 and total_subtasks == completed_subtasks else 0
+        cursor.execute("SELECT completed FROM tasks WHERE id = ?", (task_id,))
+        task_was_completed = cursor.fetchone()["completed"]
+        
+        cursor.execute("UPDATE tasks SET completed = ? WHERE id = ?", (is_task_completed, task_id))
+        
+        if is_task_completed and not task_was_completed:
+            increment_daily_stats(conn, completed_task=True)
+        elif not is_task_completed and task_was_completed:
+            decrement_daily_stats(conn, completed_task=True)
+            
+        conn.commit()
+        return True
+
+def add_subtask(task_id: int, title: str, duration_seconds: int):
+    """Adds a new subtask to a task."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        # Get the max order_index
+        cursor.execute("SELECT MAX(order_index) as max_idx FROM subtasks WHERE task_id = ?", (task_id,))
+        row = cursor.fetchone()
+        max_idx = row["max_idx"] if row["max_idx"] is not None else -1
+        new_idx = max_idx + 1
+        
+        cursor.execute(
+            "INSERT INTO subtasks (task_id, title, duration_seconds, order_index) VALUES (?, ?, ?, ?)",
+            (task_id, title, duration_seconds, new_idx)
+        )
+        new_subtask_id = cursor.lastrowid
+        
+        # Update parent task to incomplete (since a new incomplete subtask is added)
+        cursor.execute("SELECT completed FROM tasks WHERE id = ?", (task_id,))
+        task_row = cursor.fetchone()
+        if task_row and task_row["completed"] == 1:
+            cursor.execute("UPDATE tasks SET completed = 0 WHERE id = ?", (task_id,))
+            decrement_daily_stats(conn, completed_task=True)
+            
+        conn.commit()
+        return new_subtask_id
+
 

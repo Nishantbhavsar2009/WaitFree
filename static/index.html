@@ -29,17 +29,32 @@
                 <span class="logo-icon">▲</span>
                 <div class="logo-text">
                     <h1>WAITFREE</h1>
-                    <span class="version">SYS_VER 2.0.6</span>
+                    <span class="version">SYS_VER 2.1.0</span>
                 </div>
             </div>
             <div class="stats-hud">
+                <div class="hud-item rank-hud">
+                    <span class="hud-label">COGNITIVE_RANK</span>
+                    <span class="hud-value rank-value" id="user-rank">COGNITIVE_CADET</span>
+                </div>
+                <div class="hud-item xp-hud">
+                    <span class="hud-label">XP_LEVEL_PROGRESS</span>
+                    <div class="xp-progress-wrapper">
+                        <div class="xp-progress-bar" id="xp-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <span class="hud-value xp-value" id="user-xp">0 / 100 XP</span>
+                </div>
                 <div class="hud-item">
                     <span class="hud-label">DAILY_STREAK</span>
                     <span class="hud-value" id="streak-count">0D</span>
                 </div>
-                <div class="hud-item">
-                    <span class="hud-label">COMPLETED_STEPS</span>
-                    <span class="hud-value" id="subtask-completed-count">0</span>
+                <div class="hud-item sound-hud">
+                    <span class="hud-label">SFX_SYNTH</span>
+                    <select id="sound-profile" class="sound-select" aria-label="Audio sound feedback profile">
+                        <option value="cyberpunk" selected>SYNTH CHIME</option>
+                        <option value="retro">8-BIT BEEP</option>
+                        <option value="off">OFF</option>
+                    </select>
                 </div>
             </div>
         </header>
@@ -84,6 +99,16 @@
                             </div>
                         </div>
 
+                        <div class="form-group">
+                            <label for="coaching-vibe">COACHING PERSONA MODE</label>
+                            <select id="coaching-vibe" class="vibe-select">
+                                <option value="MILITARY" selected>CADET INSTRUCTOR (Urgent & Strict)</option>
+                                <option value="EMPATHETIC">EMPATHETIC COACH (Encouraging & Warm)</option>
+                                <option value="ZEN">ZEN MASTER (Calm & Mindful)</option>
+                            </select>
+                            <span class="input-hint">Select the cognitive coaching tone for decomposition.</span>
+                        </div>
+
                         <button type="submit" class="submit-btn" id="submit-btn">
                             BREAK THE FREEZE
                         </button>
@@ -104,6 +129,16 @@
                         <button class="timer-btn" id="timer-skip">SKIP_STEP</button>
                     </div>
                 </div>
+
+                <!-- RECENT MISSION HISTORY LOG -->
+                <div class="recent-missions-section">
+                    <div class="card-header border-top-only">
+                        <h2>[03] RECENT_MISSIONS_LOG</h2>
+                    </div>
+                    <div class="recent-missions-list" id="recent-missions-list">
+                        <div class="recent-mission-item empty">No previous operations logged.</div>
+                    </div>
+                </div>
             </section>
 
             <!-- RIGHT PANEL: Subtask Steps Terminal -->
@@ -117,8 +152,26 @@
                     <div class="terminal-placeholder">
                         <p class="blink-line">&gt; SYSTEM RUNNING ON STANDBY...</p>
                         <p>&gt; AWAITING INITIATION FORM SUBMISSION.</p>
-                        <p>&gt; READY TO BREAK DOWN TASKS INTO MICRO STEPS (< 2 MINS EACH).</p>
+                        <p>&gt; READY TO BREAK DOWN TASKS INTO MICRO STEPS (&lt; 2 MINS EACH).</p>
                     </div>
+                </div>
+
+                <!-- ADD CUSTOM SUBTASK TRIGGER -->
+                <div class="add-subtask-wrapper hidden" id="add-subtask-wrapper">
+                    <div class="add-subtask-form hidden" id="add-subtask-form">
+                        <input type="text" id="new-subtask-title" placeholder="Define custom subtask action..." autocomplete="off">
+                        <div class="add-subtask-duration-row">
+                            <input type="number" id="new-subtask-duration" placeholder="Duration (seconds)" min="5" max="300" value="60">
+                            <span class="sec-label">SEC</span>
+                        </div>
+                        <div class="add-subtask-buttons">
+                            <button type="button" class="btn-sub-action" id="btn-save-new-subtask">INJECT</button>
+                            <button type="button" class="btn-sub-action cancel" id="btn-cancel-new-subtask">CANCEL</button>
+                        </div>
+                    </div>
+                    <button type="button" class="add-step-btn" id="btn-add-step-trigger">
+                        + INJECT CUSTOM ACTION STEP
+                    </button>
                 </div>
                 
                 <div class="terminal-footer">
@@ -141,9 +194,6 @@
             </div>
         </footer>
     </div>
-
-    <!-- AUDIO NOTIFICATION FOR TIMER -->
-    <audio id="beep-sound" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-84.wav" preload="auto"></audio>
 
     <script src="/static/app.js"></script>
 </body>

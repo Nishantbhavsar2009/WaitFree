@@ -625,6 +625,307 @@ body {
     100% { border-color: var(--accent-amber); box-shadow: 0 0 15px var(--accent-glow); }
 }
 
+/* Gamification Progress HUD */
+.xp-progress-wrapper {
+    width: 120px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-dim);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 4px 0;
+}
+
+.xp-progress-bar {
+    height: 100%;
+    background: var(--accent-amber);
+    box-shadow: 0 0 8px var(--accent-glow);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.xp-value {
+    font-size: 10px !important;
+    color: var(--text-dim) !important;
+}
+
+.rank-value {
+    font-size: 13px !important;
+    color: var(--text-bright) !important;
+}
+
+/* Dropdown Select Elements styling */
+.vibe-select, .sound-select {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-dim);
+    color: var(--text-bright);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 8px 12px;
+    outline: none;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.vibe-select:focus, .sound-select:focus {
+    border-color: var(--accent-amber);
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.sound-select {
+    padding: 2px 6px;
+    font-size: 10px;
+    border-color: var(--border-dim);
+    margin-top: 2px;
+}
+
+/* Recent Missions History Panel */
+.recent-missions-section {
+    margin-top: auto;
+    border-top: 1px solid var(--border-dim);
+}
+
+.border-top-only {
+    border-top: 2px solid var(--accent-dim);
+    border-bottom: none !important;
+}
+
+.recent-missions-list {
+    max-height: 150px;
+    overflow-y: auto;
+    padding: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.recent-mission-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-dim);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.recent-mission-item:hover {
+    background: rgba(217, 119, 6, 0.05);
+    border-color: var(--accent-dim);
+}
+
+.recent-mission-title {
+    color: var(--text-bright);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+.recent-mission-meta {
+    font-size: 9px;
+    color: var(--accent-amber);
+    font-weight: 700;
+}
+
+.recent-mission-item.empty {
+    color: var(--text-dim);
+    justify-content: center;
+    border-style: dashed;
+    cursor: default;
+    background: transparent;
+}
+
+/* Inline Add Custom Step UI */
+.add-subtask-wrapper {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-top: 1px solid var(--border-dim);
+    background: rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.add-subtask-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+}
+
+.add-subtask-form input[type="text"] {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border-dim);
+    color: var(--text-bright);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 8px;
+    outline: none;
+    border-radius: 2px;
+}
+
+.add-subtask-form input[type="text"]:focus {
+    border-color: var(--accent-amber);
+}
+
+.add-subtask-duration-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.add-subtask-duration-row input[type="number"] {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border-dim);
+    color: var(--text-bright);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 6px;
+    width: 80px;
+    outline: none;
+    border-radius: 2px;
+}
+
+.sec-label {
+    font-size: 10px;
+    color: var(--accent-amber);
+}
+
+.add-subtask-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-sub-action {
+    flex: 1;
+    background: var(--accent-dim);
+    color: var(--text-bright);
+    border: none;
+    border-radius: 2px;
+    padding: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-sub-action:hover {
+    background: var(--accent-amber);
+    color: var(--bg-main);
+}
+
+.btn-sub-action.cancel {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-dim);
+    color: var(--text-dim);
+}
+
+.btn-sub-action.cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-bright);
+}
+
+.add-step-btn {
+    background: transparent;
+    border: 1px dashed var(--accent-dim);
+    color: var(--accent-amber);
+    padding: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.add-step-btn:hover {
+    background: rgba(217, 119, 6, 0.05);
+    border-color: var(--accent-amber);
+    box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* Step Card Actions & Controls */
+.step-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.step-action-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    padding: 2px 4px;
+    transition: all 0.2s ease;
+    border-radius: 2px;
+}
+
+.step-action-btn:hover {
+    color: var(--accent-amber);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.step-action-btn.delete:hover {
+    color: oklch(65% 0.2 20); /* red-ish delete */
+    background: rgba(239, 68, 68, 0.05);
+}
+
+/* Step Card Inline Editing Form */
+.step-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+}
+
+.step-edit-inputs {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.step-edit-inputs input[type="text"] {
+    flex: 1;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--accent-dim);
+    color: var(--text-bright);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    outline: none;
+    border-radius: 2px;
+}
+
+.step-edit-inputs input[type="number"] {
+    width: 80px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--accent-dim);
+    color: var(--text-bright);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    outline: none;
+    border-radius: 2px;
+}
+
+.step-edit-buttons {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
 /* Responsive Overrides */
 @media (max-width: 968px) {
     .hud-grid {

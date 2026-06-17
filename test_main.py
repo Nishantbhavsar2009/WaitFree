@@ -98,3 +98,55 @@ def test_api_stats():
     assert "completed_tasks" in stats
     assert "completed_subtasks" in stats
     assert "streak" in stats
+    assert "total_xp" in stats
+    assert "level" in stats
+
+def test_api_subtask_crud_operations():
+    # 1. Create a task
+    create_response = client.post("/api/tasks", json={
+        "title": "Clean practical lab notes",
+        "minutes_left": 15,
+        "coaching_vibe": "ZEN"
+    })
+    assert create_response.status_code == 200
+    task_data = create_response.json()
+    task_id = task_data["id"]
+    subtasks = task_data["subtasks"]
+    assert len(subtasks) > 0
+    
+    # 2. Add a new subtask
+    add_response = client.post(f"/api/tasks/{task_id}/subtasks", json={
+        "title": "Zen deep breath session",
+        "duration_seconds": 45
+    })
+    assert add_response.status_code == 200
+    new_subtask_id = add_response.json()["id"]
+    
+    # Verify subtask added
+    detail_response = client.get(f"/api/tasks/{task_id}")
+    updated_subtasks = detail_response.json()["subtasks"]
+    assert any(sub["id"] == new_subtask_id for sub in updated_subtasks)
+    
+    # 3. Edit the new subtask
+    edit_response = client.patch(f"/api/subtasks/{new_subtask_id}/content", json={
+        "title": "Mindful clean wrapup",
+        "duration_seconds": 90
+    })
+    assert edit_response.status_code == 200
+    
+    # Verify changes
+    detail_response2 = client.get(f"/api/tasks/{task_id}")
+    updated_subtasks2 = detail_response2.json()["subtasks"]
+    target_sub = next(sub for sub in updated_subtasks2 if sub["id"] == new_subtask_id)
+    assert target_sub["title"] == "Mindful clean wrapup"
+    assert target_sub["duration_seconds"] == 90
+    
+    # 4. Delete the subtask
+    delete_response = client.delete(f"/api/subtasks/{new_subtask_id}")
+    assert delete_response.status_code == 200
+    
+    # Verify deleted
+    detail_response3 = client.get(f"/api/tasks/{task_id}")
+    updated_subtasks3 = detail_response3.json()["subtasks"]
+    assert not any(sub["id"] == new_subtask_id for sub in updated_subtasks3)
+

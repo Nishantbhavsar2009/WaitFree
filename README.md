@@ -24,8 +24,12 @@ graph TD
 - **Cyberpunk HUD Design System:** Translucent glassmorphic dark-theme UI tailored to minimize cognitive load and focus attention.
 - **Sub-2-Minute Task Decomposer:** Uses Gemini AI to break down complex tasks into atomic units.
 - **Local Fallback Engine:** Smart keyword-based breakdown algorithm that works out-of-the-box offline without an API key.
-- **Focus Timer Mode:** A central HUD circular animation timer counts down the 2 minutes for the active step.
-- **Analytics & Streaks:** Tracks completed steps and maintains a daily streak log to gamify task initiation.
+- **Focus Timer Mode:** A central HUD circular animation timer counts down the 2 minutes for the active step with warning tick indicators in the final 10 seconds.
+- **Offline Web Audio SFX Synth:** Synthesizes audio cues (synth chime, 8-bit alarm, arpeggiated success chords) using browser native Web Audio API, working 100% offline.
+- **Cognitive Coaching Personas:** Formulates steps in 3 distinct tones: Cadet Instructor (Military), Empathetic Coach, or Zen Master.
+- **Inline Checklist Editor (CRUD):** Inject new steps, edit titles/durations inline, or delete steps directly inside the decomposition checklist panel.
+- **Gamification Levels & XP Ranks:** Features a persistent leveling system (Level 1: Cadet to Level 5: Commander) with custom progress bars calculated via accumulated subtask XP.
+- **Recent Mission History Panel:** A sidebar database log showcasing past decompositions and completion success rates, allowing quick reactivation.
 
 ---
 

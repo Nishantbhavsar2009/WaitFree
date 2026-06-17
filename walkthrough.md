@@ -39,11 +39,11 @@ All tests run successfully with zero errors:
 platform darwin -- Python 3.14.5, pytest-9.1.0, pluggy-1.6.0
 rootdir: /Users/nishantbhavsar/Projects/WaitFree
 plugins: anyio-4.14.0
-collected 4 items
+collected 5 items
 
-test_main.py ....                                                        [100%]
+test_main.py .....                                                       [100%]
 
-======================== 4 passed, 3 warnings in 0.11s =========================
+======================== 5 passed, 3 warnings in 0.12s =========================
 ```
 
 Tests performed:
@@ -51,3 +51,15 @@ Tests performed:
 2. `test_api_invalid_task_creation`: Validates edge cases like empty names and zero-duration limits.
 3. `test_api_update_subtask_status`: Verifies updates modify subtask completion flag in database.
 4. `test_api_stats`: Validates the retrieval of user daily statistics and streak values.
+5. `test_api_subtask_crud_operations`: Validates CRUD actions for subtask content updates, addition of new steps, and step deletions.
+
+---
+
+## 4. Continuous Improvement Features (v1.1)
+
+To maximize project quality, we implemented a continuous improvement cycle focusing on custom browser synthesizers, ADHD psychological coaching tones, list customization, and long-term gamification progress:
+- **Audio Synthesis:** Built a native Web Audio API synthesizer (`SynthAudio` in `app.js`) to generate clean cyberpunk chimes and alarms, keeping the app completely offline-resilient and eliminating broken external sound assets.
+- **ADHD Personas:** Configured the database fallback routines and Gemini AI schema calls to adapt step titles to a commanding, warm, or meditative cognitive vibe.
+- **List CRUD Modifiers:** Implemented database-backed endpoints (`PATCH /api/subtasks/{id}/content`, `DELETE /api/subtasks/{id}`, `POST /api/tasks/{id}/subtasks`) and inline edit forms to give the user absolute control over their checklist.
+- **Gamified Leveling Engine:** Extended statistics calculation to compile XP and user ranks from Cadet to Commander across all historical tasks.
+- **Recent Mission history log:** Built a database log panel allowing the user to review, reactivate, or resume past breakout sessions.

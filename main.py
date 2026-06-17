@@ -31,12 +31,78 @@ def read_root():
 class TaskCreate(BaseModel):
     title: str
     minutes_left: int
+    coaching_vibe: Optional[str] = "MILITARY"
 
 class SubTaskUpdate(BaseModel):
     completed: bool
 
+class SubTaskContentUpdate(BaseModel):
+    title: str
+    duration_seconds: int
+
+class SubTaskCreate(BaseModel):
+    title: str
+    duration_seconds: int
+
+def format_step_by_vibe(step_title: str, vibe: str) -> str:
+    vibe = vibe.upper()
+    if vibe == "MILITARY":
+        cleaned = step_title.replace("Stand up, stretch, and clear", "INITIALIZE: Clear") \
+                            .replace("Open your", "DECODE: Open") \
+                            .replace("Open the", "DECODE: Open") \
+                            .replace("Write down a", "EXECUTE: Write") \
+                            .replace("Write a", "EXECUTE: Write") \
+                            .replace("Write exactly", "EXECUTE: Write") \
+                            .replace("Read exactly", "EXECUTE: Read") \
+                            .replace("Summarize what", "CONFIRM: Summarize") \
+                            .replace("Answer one", "EXECUTE: Solve") \
+                            .replace("Put on a", "INITIALIZE: Set") \
+                            .replace("Put away", "EXECUTE: Clean") \
+                            .replace("Wipe down", "EXECUTE: Clear") \
+                            .replace("Gather any", "EXECUTE: Tidy") \
+                            .replace("Take one", "EXECUTE: Move") \
+                            .replace("Take a", "STANDBY: Take")
+        if not any(prefix in cleaned for prefix in ["INITIALIZE", "DECODE", "EXECUTE", "CONFIRM", "STANDBY"]):
+            cleaned = f"EXECUTE: {cleaned}"
+        return cleaned
+    elif vibe == "EMPATHETIC":
+        softened = step_title.replace("Stand up, stretch, and clear", "Stretch gently, and clear a peaceful workspace") \
+                             .replace("Open your", "Gently open your") \
+                             .replace("Open the", "Find and open the") \
+                             .replace("Write down a", "Just scribble a single") \
+                             .replace("Write a", "Jot down a quick") \
+                             .replace("Write exactly", "Write just") \
+                             .replace("Read exactly", "Read just") \
+                             .replace("Summarize what", "Celebrate by writing a tiny summary of what") \
+                             .replace("Answer one", "Try answering just one") \
+                             .replace("Put on a", "Play a nice, happy") \
+                             .replace("Put away", "Quietly put away") \
+                             .replace("Wipe down", "Gently wipe down") \
+                             .replace("Gather any", "Collect a few") \
+                             .replace("Take one", "Comfortably take one") \
+                             .replace("Take a", "Enjoy a nice")
+        return f"{softened} 🌟"
+    elif vibe == "ZEN":
+        zenified = step_title.replace("Stand up, stretch, and clear", "Mindfully stand, breathe, and clear space") \
+                             .replace("Open your", "With full presence, open your") \
+                             .replace("Open the", "Quietly open the") \
+                             .replace("Write down a", "Breathe in; write down one") \
+                             .replace("Write a", "Inhale; write one simple") \
+                             .replace("Write exactly", "With focus, write exactly") \
+                             .replace("Read exactly", "Silently read exactly") \
+                             .replace("Summarize what", "Exhale; capture a single summary of what") \
+                             .replace("Answer one", "Exhale; solve one single") \
+                             .replace("Put on a", "Tune into a calm") \
+                             .replace("Put away", "Mindfully place") \
+                             .replace("Wipe down", "Slowly wipe down") \
+                             .replace("Gather any", "Gently gather") \
+                             .replace("Take one", "Gently move one") \
+                             .replace("Take a", "Deep inhale... release. Take a")
+        return f"🧘 {zenified}"
+    return step_title
+
 # Local fallback task breaker
-def get_local_fallback_steps(title: str, minutes_left: int) -> List[dict]:
+def get_local_fallback_steps(title: str, minutes_left: int, coaching_vibe: str = "MILITARY") -> List[dict]:
     title_lower = title.lower()
     
     # Study / Academic tasks
@@ -85,21 +151,30 @@ def get_local_fallback_steps(title: str, minutes_left: int) -> List[dict]:
     
     for step in steps:
         if total_dur + step["duration_seconds"] <= available_seconds:
-            filtered_steps.append(step)
+            formatted_title = format_step_by_vibe(step["title"], coaching_vibe)
+            filtered_steps.append({"title": formatted_title, "duration_seconds": step["duration_seconds"]})
             total_dur += step["duration_seconds"]
             
     # Always guarantee at least 2 steps
     if not filtered_steps:
-        filtered_steps = steps[:2]
+        for step in steps[:2]:
+            formatted_title = format_step_by_vibe(step["title"], coaching_vibe)
+            filtered_steps.append({"title": formatted_title, "duration_seconds": step["duration_seconds"]})
         
     return filtered_steps
 
-def break_task_into_steps(title: str, minutes_left: int) -> List[dict]:
+def break_task_into_steps(title: str, minutes_left: int, coaching_vibe: str = "MILITARY") -> List[dict]:
     api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if api_key:
         try:
             from google import genai
             from google.genai import types
+            
+            vibe_instructions = {
+                "MILITARY": "Act as a commanding Cadet Instructor. Formulate steps as strict, high-urgency, precise checklist commands (e.g. 'DECODE: Open textbook; EXECUTE: Read page 45; REPORT status'). Use prefix terms like 'DECODE', 'EXECUTE', 'INITIALIZE', 'CONFIRM', 'STANDBY'.",
+                "EMPATHETIC": "Act as a warm, encouraging, low-friction coach. Frame steps very gently with positive reinforcement, emphasizing comfort, safety, and ease of starting (e.g. 'Gently open your book when you are ready', 'Take a deep breath and read just 3 lines, you got this!').",
+                "ZEN": "Act as a calm, mindful Zen Master. Frame steps as meditative, slow, single-pointed acts of focus, prioritizing breathing, clearing mental clutter, and calm execution (e.g. 'Inhale deeply; quietly place the chemistry sheet on your desk; exhale; write one word')."
+            }.get(coaching_vibe.upper(), "Act as a commanding Cadet Instructor.")
             
             client = genai.Client(api_key=api_key)
             prompt = f"""
@@ -107,7 +182,10 @@ def break_task_into_steps(title: str, minutes_left: int) -> List[dict]:
             The user wants to accomplish the following task: "{title}"
             But they are experiencing "waiting mode" paralysis before an event in {minutes_left} minutes.
             
-            Break down the task into highly granular, low-friction subtasks.
+            Coaching Vibe:
+            {vibe_instructions}
+            
+            Break down the task into highly granular, low-friction subtasks matching this coaching vibe.
             Constraints:
             1. Every subtask MUST take less than 120 seconds (2 minutes) to complete. Keep them extremely small, simple, and action-oriented.
             2. The total duration of all subtasks combined MUST NOT exceed {minutes_left} minutes.
@@ -117,7 +195,7 @@ def break_task_into_steps(title: str, minutes_left: int) -> List[dict]:
             {{
               "subtasks": [
                 {{
-                  "title": "Clear action-oriented step (e.g. 'Open chemistry textbook to page 45')",
+                  "title": "Clear action-oriented step (formatted according to the requested coaching vibe)",
                   "duration_seconds": 120
                 }}
               ]
@@ -154,7 +232,7 @@ def break_task_into_steps(title: str, minutes_left: int) -> List[dict]:
             print(f"Error calling Gemini: {e}. Falling back to local rules.")
             
     # Fallback
-    return get_local_fallback_steps(title, minutes_left)
+    return get_local_fallback_steps(title, minutes_left, coaching_vibe)
 
 @app.post("/api/tasks")
 def api_create_task(data: TaskCreate):
@@ -163,7 +241,7 @@ def api_create_task(data: TaskCreate):
     if data.minutes_left <= 0:
         raise HTTPException(status_code=400, detail="Minutes left must be greater than zero")
         
-    subtasks = break_task_into_steps(data.title, data.minutes_left)
+    subtasks = break_task_into_steps(data.title, data.minutes_left, data.coaching_vibe or "MILITARY")
     task_id = database.create_task(data.title, data.minutes_left, subtasks)
     
     return database.get_task(task_id)
@@ -185,6 +263,25 @@ def api_update_subtask(subtask_id: int, data: SubTaskUpdate):
     if not success:
         raise HTTPException(status_code=404, detail="Subtask not found")
     return {"status": "success"}
+
+@app.patch("/api/subtasks/{subtask_id}/content")
+def api_update_subtask_content(subtask_id: int, data: SubTaskContentUpdate):
+    success = database.update_subtask_content(subtask_id, data.title, data.duration_seconds)
+    if not success:
+        raise HTTPException(status_code=404, detail="Subtask not found")
+    return {"status": "success"}
+
+@app.delete("/api/subtasks/{subtask_id}")
+def api_delete_subtask(subtask_id: int):
+    success = database.delete_subtask(subtask_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Subtask not found")
+    return {"status": "success"}
+
+@app.post("/api/tasks/{task_id}/subtasks")
+def api_add_subtask(task_id: int, data: SubTaskCreate):
+    subtask_id = database.add_subtask(task_id, data.title, data.duration_seconds)
+    return {"status": "success", "id": subtask_id}
 
 @app.get("/api/stats")
 def api_get_stats():
