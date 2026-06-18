@@ -63,3 +63,4 @@ To maximize project quality, we implemented a continuous improvement cycle focus
 - **List CRUD Modifiers:** Implemented database-backed endpoints (`PATCH /api/subtasks/{id}/content`, `DELETE /api/subtasks/{id}`, `POST /api/tasks/{id}/subtasks`) and inline edit forms to give the user absolute control over their checklist.
 - **Gamified Leveling Engine:** Extended statistics calculation to compile XP and user ranks from Cadet to Commander across all historical tasks.
 - **Recent Mission history log:** Built a database log panel allowing the user to review, reactivate, or resume past breakout sessions.
+- **Lifespan Event Upgrade (v2.1.1 - June 18, 2026):** Upgraded the deprecated `@app.on_event("startup")` handler in `main.py` to FastAPI's modern `@asynccontextmanager` `lifespan` handler, eliminating console warnings and ensuring long-term compatibility.
