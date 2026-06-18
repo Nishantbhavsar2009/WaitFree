@@ -1,5 +1,6 @@
 import os
 import json
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Body
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -9,12 +10,13 @@ import uvicorn
 
 import database
 
-app = FastAPI(title="WaitFree — ADHD Waiting Mode Task Breaker")
-
-# Initialize SQLite database on startup
-@app.on_event("startup")
-def startup_db():
+# Initialize SQLite database on startup using modern FastAPI lifespan event
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     database.init_db()
+    yield
+
+app = FastAPI(title="WaitFree — ADHD Waiting Mode Task Breaker", lifespan=lifespan)
 
 # Mount static folder
 static_dir = os.path.join(os.path.dirname(__file__), "static")
